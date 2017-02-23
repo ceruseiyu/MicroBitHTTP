@@ -14,6 +14,7 @@ class MicroBitHTTPService {
     MicroBitHTTPService(BLEDevice &_ble);
     void onDataWritten(const GattWriteCallbackParams * params);
     void updateURL(char* url);
+
   private:
     BLEDevice &ble;
 

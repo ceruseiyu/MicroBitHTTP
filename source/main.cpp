@@ -34,9 +34,10 @@ int main()
     // Initialise the micro:bit runtime.
     uBit.init();
     http = new MicroBitHTTPService(*uBit.ble);
+    new MicroBitAccelerometerService(*uBit.ble, uBit.accelerometer);
 
     // Insert your code here!
-    http->updateURL("http://google.com");
+    http->updateURL("test");
     while(1) {
       uBit.display.scroll("Active");
     }
