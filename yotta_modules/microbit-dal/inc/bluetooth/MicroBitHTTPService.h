@@ -5,6 +5,7 @@
 #include "MicroBitConfig.h"
 #include "ble/UUID.h"
 #include "ble/BLE.h"
+#include "ManagedString.h"
 
 enum HTTP_TYPE {HTTP_GET, HTTP_POST, HTTP_PUT, HTTP_DELETE};
 
@@ -17,14 +18,14 @@ class MicroBitHTTPService {
   public:
     MicroBitHTTPService(BLEDevice &_ble);
     void onDataWritten(const GattWriteCallbackParams * params);
-    void updateURL(char* url);
+    void updateURL(ManagedString url);
     uint8_t* requestHTTP(HTTP_TYPE type, char* field);
 
   private:
     BLEDevice &ble;
 
-    char* urlCharacteristicBuffer;
-    char* requestCharacteristicBuffer;
+    uint8_t* urlCharacteristicBuffer;
+    uint8_t* requestCharacteristicBuffer;
 
     GattAttribute::Handle_t urlCharacteristicHandle;
     GattAttribute::Handle_t requestCharacteristicHandle;

@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "MicroBit.h"
-//Test 2
 
 MicroBit uBit;
 MicroBitHTTPService* http;
@@ -34,13 +33,10 @@ int main()
     // Initialise the micro:bit runtime.
     uBit.init();
     http = new MicroBitHTTPService(*uBit.ble);
-    new MicroBitAccelerometerService(*uBit.ble, uBit.accelerometer);
 
     // Insert your code here!
-    http->updateURL("test");
-    while(1) {
-      uBit.display.scroll("Active");
-    }
+    http->updateURL("bit.ly/2lMVszF");
+    //http->requestHTTP(HTTP_GET, "ip");
     // If main exits, there may still be other fibers running or registered event handlers etc.
     // Simply release this fiber, which will mean we enter the scheduler. Worse case, we then
     // sit in the idle task forever, in a power efficient sleep.
