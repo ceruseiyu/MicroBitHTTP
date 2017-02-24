@@ -2,13 +2,15 @@ MicroBitHTTTPServiceUUID
 1351634a-09d1-4846-99b9-ee3112c3f55b
 MicroBitHTTTPServiceUrlUUD
 13513f02-09d1-4846-99b9-ee3112c3f55b
+MicroBitHTTPServiceRequestUUID
+c8e9149e-0dd4-496a-b633-052958336753
 
 Microbit rules for UUID characteristics:
 characteristic UUIDs should start be same as service
 Change only 3rd and 4th uint8_t for characteristics inside service
 
 
-c8e9149e-0dd4-496a-b633-052958336753
+
 
 ee935780-ac61-43fa-94c8-ca3a44f626a8
 
