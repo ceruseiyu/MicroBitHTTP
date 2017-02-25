@@ -7,7 +7,14 @@
 #include "ble/BLE.h"
 #include "ManagedString.h"
 
-enum HTTP_TYPE {HTTP_GET, HTTP_POST, HTTP_PUT, HTTP_DELETE};
+#define MAX_BYTES 20
+
+enum HTTP_TYPE {
+  HTTP_GET, 
+  HTTP_POST, 
+  HTTP_PUT, 
+  HTTP_DELETE
+};
 
 
 extern const uint8_t MicroBitHTTPServiceUUID[];
@@ -24,8 +31,8 @@ class MicroBitHTTPService {
   private:
     BLEDevice &ble;
 
-    uint8_t* urlCharacteristicBuffer;
-    uint8_t* requestCharacteristicBuffer;
+    uint8_t urlCharacteristicBuffer[MAX_BYTES];
+    uint8_t requestCharacteristicBuffer[MAX_BYTES];
 
     GattAttribute::Handle_t urlCharacteristicHandle;
     GattAttribute::Handle_t requestCharacteristicHandle;
