@@ -33,9 +33,12 @@ int main()
     // Initialise the micro:bit runtime.
     uBit.init();
     http = new MicroBitHTTPService(*uBit.ble);
+    //test
     // Insert your code here!
     http->setURL("bit.ly/2lMVszF");
     uint8_t* data = http->requestHTTP(HTTP_GET, "ip");
+    ManagedString dataString = ManagedString((char*)data);
+    uBit.display.scroll(dataString);
     // If main exits, there may still be other fibers running or registered event handlers etc.
     // Simply release this fiber, which will mean we enter the scheduler. Worse case, we then
     // sit in the idle task forever, in a power efficient sleep.

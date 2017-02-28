@@ -9,6 +9,9 @@
 
 #define MAX_BYTES 20
 
+#define MICROBIT_ID_BLE_HTTP 1200
+#define MICROBIT_BLE_HTTP_RECEIVED 1
+
 enum HTTP_TYPE {
   HTTP_GET, 
   HTTP_POST, 
@@ -34,13 +37,15 @@ class MicroBitHTTPService {
 
     BLEDevice &ble;
 
-    /*uint8_t urlCharacteristicBuffer[MAX_BYTES];
+    uint8_t urlCharacteristicBuffer[MAX_BYTES];
     uint8_t requestCharacteristicBuffer[MAX_BYTES];
-    uint8_t responseCharacteristicBuffer[MAX_BYTES];*/
+    uint8_t responseCharacteristicBuffer[MAX_BYTES];
 
-    uint8_t* urlCharacteristicBuffer;
-    uint8_t* requestCharacteristicBuffer;
-    uint8_t* responseCharacteristicBuffer;
+    uint8_t* responseData;
+
+    //uint8_t* urlCharacteristicBuffer;
+   // uint8_t* requestCharacteristicBuffer;
+    //uint8_t* responseCharacteristicBuffer;
 
     GattAttribute::Handle_t urlCharacteristicHandle;
     GattAttribute::Handle_t requestCharacteristicHandle;

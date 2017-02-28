@@ -2,12 +2,15 @@
 #include "ble/UUID.h"
 
 #include "MicroBitHTTPService.h"
+#include "MicroBitEvent.h"
+#include "MicroBitFiber.h"
+
 
 MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
 
   uint8_t characteristicProperties = GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE;
 
-  /*GattCharacteristic urlCharacteristic(MicroBitHTTPServiceUrlUUID, (uint8_t*)urlCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
+  GattCharacteristic urlCharacteristic(MicroBitHTTPServiceUrlUUID, (uint8_t*)urlCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
   GattCharacteristic requestCharacteristic(MicroBitHTTPServiceRequestUUID, (uint8_t*)requestCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
   GattCharacteristic responseCharacteristic(MicroBitHTTPServiceResponseUUID, (uint8_t*)responseCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
 
@@ -15,17 +18,24 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
 
   memset(urlCharacteristicBuffer, 0, MAX_BYTES);
   memset(requestCharacteristicBuffer, 0, MAX_BYTES);
-  memset(responseCharacteristicBuffer, 0, MAX_BYTES);*/
+  memset(responseCharacteristicBuffer, 0, MAX_BYTES);
+
+  responseData = (uint8_t*)malloc(1);
+
+ /* urlCharacteristicBuffer = (uint8_t*)malloc(1);
+  requestCharacteristicBuffer = (uint8_t*)malloc(1);
+  responseCharacteristicBuffer = (uint8_t*)malloc(1);
 
   GattCharacteristic urlCharacteristic(MicroBitHTTPServiceUrlUUID, urlCharacteristicBuffer, 1, MAX_BYTES, characteristicProperties);
   GattCharacteristic requestCharacteristic(MicroBitHTTPServiceRequestUUID, requestCharacteristicBuffer, 1, MAX_BYTES, characteristicProperties);
   GattCharacteristic responseCharacteristic(MicroBitHTTPServiceResponseUUID, responseCharacteristicBuffer, 1, MAX_BYTES, characteristicProperties);
 
-  GattCharacteristic *characteristics[] = {&urlCharacteristic, &requestCharacteristic, &responseCharacteristic};
+  GattCharacteristic *characteristics[] = {&urlCharacteristic, &requestCharacteristic, &responseCharacteristic};*/
 
-  memset(urlCharacteristicBuffer, 0, 1);
-  memset(requestCharacteristicBuffer, 0, 1);
-  memset(responseCharacteristicBuffer, 0, 1);
+
+  //memset(urlCharacteristicBuffer, 0, 1);
+  //memset(requestCharacteristicBuffer, 0, 1);
+  //memset(responseCharacteristicBuffer, 0, 1);
 
 
   urlCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
@@ -44,7 +54,11 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
 }
 
 void MicroBitHTTPService::onDataWritten(const GattWriteCallbackParams *params) {
-
+  if(params->handle == responseCharacteristicHandle) {
+    responseData = (uint8_t*)realloc(responseData, params->len);
+    memcpy(responseData, params->data, params->len);
+    MicroBitEvent(MICROBIT_ID_BLE_HTTP, MICROBIT_BLE_HTTP_RECEIVED);
+  }
 }
 
 void MicroBitHTTPService::setURL(ManagedString url) {
@@ -79,8 +93,8 @@ uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
   }
 
   //Now prepare to receive the message and return it.
-
-  return NULL;
+  fiber_wait_for_event(MICROBIT_ID_BLE_HTTP, MICROBIT_BLE_HTTP_RECEIVED);
+  return responseData;
 }
 
 void MicroBitHTTPService::writeRequest(ManagedString message) {
