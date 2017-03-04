@@ -35,8 +35,9 @@ int main()
     http = new MicroBitHTTPService(*uBit.ble);
     //test
     // Insert your code here!
-    http->setURL("bit.ly/2lMVszF");
-    uint8_t* data = http->requestHTTP(HTTP_GET, "ip");
+    //http->setURL("bit.ly/2lMVszF");
+    http->setURL("bit.ly/2lpDuUQ");
+    uint8_t* data = http->requestHTTP(HTTP_GET, "array[2]");
     ManagedString dataString = ManagedString((char*)data);
     uBit.display.scroll(dataString);
     // If main exits, there may still be other fibers running or registered event handlers etc.

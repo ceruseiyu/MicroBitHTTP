@@ -20,8 +20,6 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
   memset(requestCharacteristicBuffer, 0, MAX_BYTES);
   memset(responseCharacteristicBuffer, 0, MAX_BYTES);
 
-  responseData = (uint8_t*)malloc(1);
-
  /* urlCharacteristicBuffer = (uint8_t*)malloc(1);
   requestCharacteristicBuffer = (uint8_t*)malloc(1);
   responseCharacteristicBuffer = (uint8_t*)malloc(1);
@@ -55,17 +53,19 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
 
 void MicroBitHTTPService::onDataWritten(const GattWriteCallbackParams *params) {
   if(params->handle == responseCharacteristicHandle) {
-    responseData = (uint8_t*)realloc(responseData, params->len);
-    memcpy(responseData, params->data, params->len);
+    responseData = (uint8_t*)params->data;
+    responseLen = params->len;
     MicroBitEvent(MICROBIT_ID_BLE_HTTP, MICROBIT_BLE_HTTP_RECEIVED);
   }
 }
 
-void MicroBitHTTPService::setURL(ManagedString url) {
+HTTP_ERROR MicroBitHTTPService::setURL(ManagedString url) {
   if(url.length() < MAX_BYTES) {
     uint8_t* urlBytes = (uint8_t*)url.toCharArray();
     ble.gattServer().write(urlCharacteristicHandle, urlBytes, url.length());
+    return NO_ERROR;
   }
+  return URL_TOO_LARGE;
 }
 
 uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
@@ -74,27 +74,29 @@ uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
   }
   ManagedString message;
   switch(type) {
-    case HTTP_GET:  
+    case HTTP_GET:
       message = "G" + field;
-      writeRequest(message);
       break;
-    case HTTP_POST: 
+    case HTTP_POST:
       message = "P" + field;
-      writeRequest(message);
       break;
-    case HTTP_PUT: 
+    case HTTP_PUT:
       message = "p" + field;
-      writeRequest(message);
       break;
-    case HTTP_DELETE: 
+    case HTTP_DELETE:
       message = "D" + field;
-      writeRequest(message);
       break;
   }
-
+  writeRequest(message);
   //Now prepare to receive the message and return it.
   fiber_wait_for_event(MICROBIT_ID_BLE_HTTP, MICROBIT_BLE_HTTP_RECEIVED);
-  return responseData;
+  /*If you don't +1 to responseLen when allocating and clearing the allocated
+    memory, you end up with a memory error with random characters being added
+    */
+  uint8_t* returnData = (uint8_t*)malloc(sizeof(uint8_t)*responseLen+1);
+  memset(returnData, 0, responseLen+1);
+  memcpy(returnData, responseData, responseLen);
+  return returnData;
 }
 
 void MicroBitHTTPService::writeRequest(ManagedString message) {
