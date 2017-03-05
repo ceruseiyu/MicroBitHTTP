@@ -20,22 +20,6 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
   memset(requestCharacteristicBuffer, 0, MAX_BYTES);
   memset(responseCharacteristicBuffer, 0, MAX_BYTES);
 
- /* urlCharacteristicBuffer = (uint8_t*)malloc(1);
-  requestCharacteristicBuffer = (uint8_t*)malloc(1);
-  responseCharacteristicBuffer = (uint8_t*)malloc(1);
-
-  GattCharacteristic urlCharacteristic(MicroBitHTTPServiceUrlUUID, urlCharacteristicBuffer, 1, MAX_BYTES, characteristicProperties);
-  GattCharacteristic requestCharacteristic(MicroBitHTTPServiceRequestUUID, requestCharacteristicBuffer, 1, MAX_BYTES, characteristicProperties);
-  GattCharacteristic responseCharacteristic(MicroBitHTTPServiceResponseUUID, responseCharacteristicBuffer, 1, MAX_BYTES, characteristicProperties);
-
-  GattCharacteristic *characteristics[] = {&urlCharacteristic, &requestCharacteristic, &responseCharacteristic};*/
-
-
-  //memset(urlCharacteristicBuffer, 0, 1);
-  //memset(requestCharacteristicBuffer, 0, 1);
-  //memset(responseCharacteristicBuffer, 0, 1);
-
-
   urlCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   requestCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   responseCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
@@ -90,11 +74,30 @@ uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
   writeRequest(message);
   //Now prepare to receive the message and return it.
   fiber_wait_for_event(MICROBIT_ID_BLE_HTTP, MICROBIT_BLE_HTTP_RECEIVED);
+
   /*If you don't +1 to responseLen when allocating and clearing the allocated
     memory, you end up with a memory error with random characters being added
-    */
-  uint8_t* returnData = (uint8_t*)malloc(sizeof(uint8_t)*responseLen+1);
-  memset(returnData, 0, responseLen+1);
+  */
+  uint8_t* returnData = (uint8_t*)malloc(sizeof(uint8_t) * responseLen + 1);
+  memset(returnData, 0, responseLen + 1);
+  memcpy(returnData, responseData, responseLen);
+  return returnData;
+}
+
+uint8_t* MicroBitHTTPService::requestMacroHTTP(uint8_t macroID, ManagedString macroParams) {
+  if(macroParams.length() > MAX_BYTES - 2) {
+    return NULL;
+  }
+  char* messageArray = (char*)malloc(macroParams.length() + 1);
+  messageArray[0] = 'M';
+  messageArray[1] = (char)macroID;
+  messageArray[2] = '\0';
+  strcat(messageArray, macroParams.toCharArray());
+  writeRequest(messageArray);
+  fiber_wait_for_event(MICROBIT_ID_BLE_HTTP, MICROBIT_BLE_HTTP_RECEIVED);
+
+  uint8_t* returnData = (uint8_t*)malloc(sizeof(uint8_t) * responseLen + 1);
+  memset(returnData, 0, responseLen + 1);
   memcpy(returnData, responseData, responseLen);
   return returnData;
 }

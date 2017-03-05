@@ -36,6 +36,7 @@ class MicroBitHTTPService {
     void onDataWritten(const GattWriteCallbackParams * params);
     HTTP_ERROR setURL(ManagedString url);
     uint8_t* requestHTTP(HTTP_TYPE type, ManagedString field);
+    uint8_t* requestMacroHTTP(uint8_t macroID, ManagedString macroParams);
 
   private:
     void writeRequest(ManagedString message);
