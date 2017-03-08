@@ -29,23 +29,26 @@ extern const uint8_t MicroBitHTTPServiceUUID[];
 extern const uint8_t MicroBitHTTPServiceUrlUUID[];
 extern const uint8_t MicroBitHTTPServiceRequestUUID[];
 extern const uint8_t MicroBitHTTPServiceResponseUUID[];
+extern const uint8_t MicroBitHTTPServicePostDataUUID[];
 
 class MicroBitHTTPService {
   public:
     MicroBitHTTPService(BLEDevice &_ble);
     void onDataWritten(const GattWriteCallbackParams * params);
     HTTP_ERROR setURL(ManagedString url);
-    uint8_t* requestHTTP(HTTP_TYPE type, ManagedString field);
+    uint8_t* requestHTTP(HTTP_TYPE type, ManagedString field, ManagedString postData);
     uint8_t* requestMacroHTTP(uint8_t macroID, ManagedString macroParams);
 
   private:
     void writeRequest(ManagedString message);
+    void writePostData(ManagedString data);
 
     BLEDevice &ble;
 
     uint8_t urlCharacteristicBuffer[MAX_BYTES];
     uint8_t requestCharacteristicBuffer[MAX_BYTES];
     uint8_t responseCharacteristicBuffer[MAX_BYTES];
+    uint8_t postDataCharacteristicBuffer[MAX_BYTES];
 
     uint8_t* responseData;
     int responseLen;
@@ -57,6 +60,7 @@ class MicroBitHTTPService {
     GattAttribute::Handle_t urlCharacteristicHandle;
     GattAttribute::Handle_t requestCharacteristicHandle;
     GattAttribute::Handle_t responseCharacteristicHandle;
+    GattAttribute::Handle_t postDataCharacteristicHandle;
 };
 
 #endif

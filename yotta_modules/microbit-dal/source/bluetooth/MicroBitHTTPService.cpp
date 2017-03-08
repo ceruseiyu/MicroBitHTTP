@@ -13,16 +13,19 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
   GattCharacteristic urlCharacteristic(MicroBitHTTPServiceUrlUUID, (uint8_t*)urlCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
   GattCharacteristic requestCharacteristic(MicroBitHTTPServiceRequestUUID, (uint8_t*)requestCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
   GattCharacteristic responseCharacteristic(MicroBitHTTPServiceResponseUUID, (uint8_t*)responseCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
+  GattCharacteristic postDataCharacteristic(MicroBitHTTPServicePostDataUUID, (uint8_t*)postDataCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
 
-  GattCharacteristic *characteristics[] = {&urlCharacteristic, &requestCharacteristic, &responseCharacteristic};
+  GattCharacteristic *characteristics[] = {&urlCharacteristic, &requestCharacteristic, &responseCharacteristic, &postDataCharacteristic};
 
   memset(urlCharacteristicBuffer, 0, MAX_BYTES);
   memset(requestCharacteristicBuffer, 0, MAX_BYTES);
   memset(responseCharacteristicBuffer, 0, MAX_BYTES);
+  memset(postDataCharacteristicBuffer, 0, MAX_BYTES);
 
   urlCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   requestCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   responseCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
+  postDataCharacteristic.requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
 
   GattService service(MicroBitHTTPServiceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic*));
   ble.addService(service);
@@ -30,6 +33,7 @@ MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
   urlCharacteristicHandle = urlCharacteristic.getValueHandle();
   requestCharacteristicHandle = requestCharacteristic.getValueHandle();
   responseCharacteristicHandle = responseCharacteristic.getValueHandle();
+  postDataCharacteristicHandle = postDataCharacteristic.getValueHandle();
 
   ble.onDataWritten(this, &MicroBitHTTPService::onDataWritten);
 
@@ -52,7 +56,7 @@ HTTP_ERROR MicroBitHTTPService::setURL(ManagedString url) {
   return URL_TOO_LARGE;
 }
 
-uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
+uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field, ManagedString postData = " ") {
   if(field.length() > MAX_BYTES - 1) {
     return NULL;
   }
@@ -63,6 +67,10 @@ uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
       break;
     case HTTP_POST:
       message = "P" + field;
+      if(postData == " " || postData.length() > MAX_BYTES) {
+        return NULL;
+      }
+      writePostData(postData);
       break;
     case HTTP_PUT:
       message = "p" + field;
@@ -107,6 +115,11 @@ void MicroBitHTTPService::writeRequest(ManagedString message) {
   ble.gattServer().write(requestCharacteristicHandle, messageBytes, message.length());
 }
 
+void MicroBitHTTPService::writePostData(ManagedString data) {
+  uint8_t* dataBytes = (uint8_t*)data.toCharArray();
+  ble.gattServer().write(requestCharacteristicHandle, dataBytes, data.length());
+}
+
 const uint8_t MicroBitHTTPServiceUUID[] = {
   0x13, 0x51, 0x63, 0x4a, 0x09, 0xd1, 0x48, 0x46, 0x99, 0xb9, 0xee, 0x31, 0x12, 0xc3, 0xf5, 0x5b
 };
@@ -121,4 +134,8 @@ const uint8_t MicroBitHTTPServiceRequestUUID[] = {
 
 const uint8_t MicroBitHTTPServiceResponseUUID[] = {
   0x13, 0x51, 0x57, 0x80, 0x09, 0xd1, 0x48, 0x46, 0x99, 0xb9, 0xee, 0x31, 0x12, 0xc3, 0xf5, 0x5b
+};
+
+const uint8_t MicroBitHTTPServicePostDataUUID[] = {
+  0x13, 0x51, 0x4c, 0x6f, 0x09, 0xd1, 0x48, 0x46, 0x99, 0xb9, 0xee, 0x31, 0x12, 0xc3, 0xf5, 0x5b
 };

@@ -35,7 +35,6 @@ int main()
     // Initialise the micro:bit runtime.
     uBit.init();
     http = new MicroBitHTTPService(*uBit.ble);
-    //test
     // Insert your code here!
     //http->setURL("bit.ly/2lMVszF");
     http->setURL("bit.ly/2lpDuUQ");
