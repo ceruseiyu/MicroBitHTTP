@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 
 //Weather API JSON:
 //bit.ly/2lMpBAd
+
+//ID for our macro on the server side
 #define WEATHER_MACRO_ID 0x01
 
 
@@ -34,20 +36,25 @@ MicroBit uBit;
 MicroBitHTTPService* http;
 
 int main() {
-    // Initialise the micro:bit runtime.
     uBit.init();
+    //Start HTTP Service
     http = new MicroBitHTTPService(*uBit.ble);
-    // Insert your code here!
+
+    //Set URL for Weather JSON API for london
     http->setURL("bit.ly/2lMpBAd");
-    //uint8_t* data = http->requestHTTP(HTTP_GET, "array[2]");
+
+
     uint8_t* data = http->requestMacroHTTP(WEATHER_MACRO_ID, "data");
+
+    //Convert first byte into our temperature value from -64 to +64 degrees celsius
     int temperature = (int)data[0] - 64;
+
+    //Rest of the data is the string for the type of weather taking place
     ManagedString rawString = ManagedString((char*)data);
     ManagedString weatherString = rawString.substring(1, rawString.length());
+
+    //Display data
     uBit.display.scroll(weatherString);
     uBit.display.scroll(temperature);
-    // If main exits, there may still be other fibers running or registered event handlers etc.
-    // Simply release this fiber, which will mean we enter the scheduler. Worse case, we then
-    // sit in the idle task forever, in a power efficient sleep.
     release_fiber();
 }
