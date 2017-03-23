@@ -21,7 +21,8 @@ enum HTTP_TYPE {
 
 enum HTTP_ERROR {
   NO_ERROR,
-  URL_TOO_LARGE
+  URL_TOO_LARGE,
+  DATA_TOO_LARGE
 };
 
 
@@ -36,12 +37,12 @@ class MicroBitHTTPService {
     MicroBitHTTPService(BLEDevice &_ble);
     void onDataWritten(const GattWriteCallbackParams * params);
     HTTP_ERROR setURL(ManagedString url);
-    uint8_t* requestHTTP(HTTP_TYPE type, ManagedString field, ManagedString postData);
+    HTTP_ERROR writePostData(ManagedString data);
+    uint8_t* requestHTTP(HTTP_TYPE type, ManagedString field);
     uint8_t* requestMacroHTTP(uint8_t macroID, ManagedString macroParams);
 
   private:
     void writeRequest(ManagedString message);
-    void writePostData(ManagedString data);
 
     BLEDevice &ble;
 

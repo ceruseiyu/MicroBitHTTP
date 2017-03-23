@@ -25,13 +25,9 @@ DEALINGS IN THE SOFTWARE.
 
 #include "MicroBit.h"
 
-//Weather API JSON:
-//bit.ly/2lMpBAd
-//#define WEATHER_MACRO_ID 0x01
-
-//Griffito post.php
-//griffito.info/microbit/post.php
-//bit.ly/2nKyGtT
+//Griffito test.json
+//griffito.info/microbit/test.json
+//bit.ly/2nKjgGg
 
 MicroBit uBit;
 MicroBitHTTPService* http;
@@ -41,11 +37,8 @@ int main() {
     uBit.init();
     http = new MicroBitHTTPService(*uBit.ble);
     // Insert your code here!
-    http->setURL("bit.ly/2nKyGtT");
-    http->writePostData("data=Test");
-    uint8_t* data = http->requestHTTP(HTTP_POST, "data");
-    //uint8_t* data = http->requestMacroHTTP(WEATHER_MACRO_ID, "data");
-   // int temperature = (int)data[0] - 64;
+    http->setURL("bit.ly/2nKjgGg");
+    uint8_t* data = http->requestHTTP(HTTP_GET, "object.array[4]");
     ManagedString string = ManagedString((char*)data);
     uBit.display.scroll(string);
     // If main exits, there may still be other fibers running or registered event handlers etc.

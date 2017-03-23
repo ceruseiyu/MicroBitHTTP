@@ -56,7 +56,7 @@ HTTP_ERROR MicroBitHTTPService::setURL(ManagedString url) {
   return URL_TOO_LARGE;
 }
 
-uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field, ManagedString postData = " ") {
+uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field) {
   if(field.length() > MAX_BYTES - 1) {
     return NULL;
   }
@@ -67,10 +67,10 @@ uint8_t* MicroBitHTTPService::requestHTTP(HTTP_TYPE type, ManagedString field, M
       break;
     case HTTP_POST:
       message = "P" + field;
-      if(postData == " " || postData.length() > MAX_BYTES) {
+      /*if(postData == " " || postData.length() > MAX_BYTES) {
         return NULL;
       }
-      writePostData(postData);
+      writePostData(postData);*/
       break;
     case HTTP_PUT:
       message = "p" + field;
@@ -115,9 +115,13 @@ void MicroBitHTTPService::writeRequest(ManagedString message) {
   ble.gattServer().write(requestCharacteristicHandle, messageBytes, message.length());
 }
 
-void MicroBitHTTPService::writePostData(ManagedString data) {
-  uint8_t* dataBytes = (uint8_t*)data.toCharArray();
-  ble.gattServer().write(requestCharacteristicHandle, dataBytes, data.length());
+HTTP_ERROR MicroBitHTTPService::writePostData(ManagedString data) {
+  if(data.length() < MAX_BYTES) {
+    uint8_t* dataBytes = (uint8_t*)data.toCharArray();
+    ble.gattServer().write(postDataCharacteristicHandle, dataBytes, data.length());
+    return NO_ERROR;
+  }
+  return DATA_TOO_LARGE;
 }
 
 const uint8_t MicroBitHTTPServiceUUID[] = {
