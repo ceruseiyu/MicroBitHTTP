@@ -50,6 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "ble/services/DeviceInformationService.h"
 
+//Include our new service
 #include "MicroBitHTTPService.h"
 
 #include "MicroBitDFUService.h"

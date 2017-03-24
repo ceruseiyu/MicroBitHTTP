@@ -35,12 +35,20 @@ MicroBitHTTPService* http;
 int main() {
     // Initialise the micro:bit runtime.
     uBit.init();
+
+    // Start the HTTP service
     http = new MicroBitHTTPService(*uBit.ble);
 
+    // Set the URL to make the HTTP request to
     http->setURL("bit.ly/2nKyGtT");
+
+    // Set the POST data to write with the request
     http->writePostData("data=Test");
+
+    // Make the POST request
     uint8_t* data = http->requestHTTP(HTTP_POST, "data");
 
+    // Convert the data to a string and display it
     ManagedString string = ManagedString((char*)data);
     uBit.display.scroll(string);
     // If main exits, there may still be other fibers running or registered event handlers etc.

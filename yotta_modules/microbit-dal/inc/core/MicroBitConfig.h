@@ -126,6 +126,13 @@ extern uint32_t __etext;
 #define MICROBIT_HEAP_REUSE_SD                  1
 #endif
 
+/*
+  *****
+  Memory increased here for the HTTP Service, otherwise all characteristics will not be advertised.
+  *****
+*/
+
+
 // The amount of memory allocated to Soft Device to hold its BLE GATT table.
 // For standard S110 builds, this should be word aligned and in the range 0x300 - 0x700.
 // Any unused memory will be automatically reclaimed as HEAP memory if both MICROBIT_HEAP_REUSE_SD and MICROBIT_HEAP_ALLOCATOR are enabled.
