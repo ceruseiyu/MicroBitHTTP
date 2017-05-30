@@ -8,7 +8,7 @@
 
 MicroBitHTTPService::MicroBitHTTPService(BLEDevice &_ble) : ble(_ble) {
   // Allow reading and writing to the characteristics
-  uint8_t characteristicProperties = GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE;
+  uint8_t characteristicProperties = GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY;
 
   // Create all characteristics and place them in an array
   GattCharacteristic urlCharacteristic(MicroBitHTTPServiceUrlUUID, (uint8_t*)urlCharacteristicBuffer, MAX_BYTES, MAX_BYTES, characteristicProperties);
@@ -57,7 +57,11 @@ void MicroBitHTTPService::onDataWritten(const GattWriteCallbackParams *params) {
 HTTP_ERROR MicroBitHTTPService::setURL(ManagedString url) {
   if(url.length() < MAX_BYTES) { // Check string is not larger than MTU
     uint8_t* urlBytes = (uint8_t*)url.toCharArray();
-    ble.gattServer().write(urlCharacteristicHandle, urlBytes, url.length());
+    if (ble.getGapState().connected) {
+      ble.gattServer().notify(urlCharacteristicHandle, urlBytes, url.length());
+    } else {
+      ble.gattServer().write(urlCharacteristicHandle, urlBytes, url.length());
+    }
     return NO_ERROR;
   }
   return URL_TOO_LARGE;
@@ -125,14 +129,22 @@ uint8_t* MicroBitHTTPService::requestMacroHTTP(uint8_t macroID, ManagedString ma
 // Write message to the Request characteristic
 void MicroBitHTTPService::writeRequest(ManagedString message) {
   uint8_t* messageBytes = (uint8_t*)message.toCharArray();
-  ble.gattServer().write(requestCharacteristicHandle, messageBytes, message.length());
+  if (ble.getGapState().connected) {
+    ble.gattServer().notify(requestCharacteristicHandle, messageBytes, message.length());
+  } else {
+    ble.gattServer().write(requestCharacteristicHandle, messageBytes, message.length());
+  }
 }
 
 // Write data to the PostData characteristic
 HTTP_ERROR MicroBitHTTPService::writePostData(ManagedString data) {
   if(data.length() < MAX_BYTES) { // Check MTU is not exceeded
     uint8_t* dataBytes = (uint8_t*)data.toCharArray();
-    ble.gattServer().write(postDataCharacteristicHandle, dataBytes, data.length());
+    if (ble.getGapState().connected) {
+      ble.gattServer().notify(postDataCharacteristicHandle, dataBytes, data.length());
+    } else {
+      ble.gattServer().write(postDataCharacteristicHandle, dataBytes, data.length());
+    }
     return NO_ERROR;
   }
   return DATA_TOO_LARGE;

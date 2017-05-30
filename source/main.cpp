@@ -46,6 +46,8 @@ int main() {
 
     uint8_t* data = http->requestMacroHTTP(WEATHER_MACRO_ID, "data");
 
+    http->setURL("test.com");
+
     //Convert first byte into our temperature value from -64 to +64 degrees celsius
     int temperature = (int)data[0] - 64;
 
