@@ -37,26 +37,79 @@ MicroBitHTTPService* http;
 
 int main() {
     uBit.init();
+
     //Start HTTP Service
     http = new MicroBitHTTPService(*uBit.ble);
+
+    /*
+     * Single JSON field request
+     */
+
+    // Set the URL to make the HTTP request to
+    http->setURL("bit.ly/2nKjgGg");
+
+    // Make the HTTP request for the value of "field"
+    uint8_t* singleFieldData = http->requestHTTP(HTTP_GET, "field");
+
+    // Convert the data to a string and display it
+    ManagedString singleFieldString = ManagedString((char*)singleFieldData);
+    uBit.display.scroll(singleFieldString);
+
+    fiber_wait_for_event(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK);
+
+    /*
+     * Nested array request
+     */
+
+    http->setURL("bit.ly/2nKjgGg");
+
+    // Retrieve the data from an array nested inisde an object
+    uint8_t* nestedData = http->requestHTTP(HTTP_GET, "object.array[4]");
+
+    // Convert the received data to a string and display it
+    ManagedString nestedString = ManagedString((char*)nestedData);
+    uBit.display.scroll(nestedString);
+
+    fiber_wait_for_event(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK);
+
+    /*
+     * POST request
+     */
+
+    http->setURL("bit.ly/2nKyGtT");
+
+    // Set the POST data to write with the request
+    http->writePostData("data=Test");
+
+    // Make the POST request
+    uint8_t* postData = http->requestHTTP(HTTP_POST, "data");
+
+    // Convert the data to a string and display it
+    ManagedString postString = ManagedString((char*)postData);
+    uBit.display.scroll(postString);
+
+    fiber_wait_for_event(MICROBIT_ID_BUTTON_B, MICROBIT_BUTTON_EVT_CLICK);
+
+    /*
+     * Weather macro request
+     */
 
     //Set URL for Weather JSON API for london
     http->setURL("bit.ly/2lMpBAd");
 
-
-    uint8_t* data = http->requestMacroHTTP(WEATHER_MACRO_ID, "data");
-
-    http->setURL("test.com");
+    //Make request
+    uint8_t* weatherData = http->requestMacroHTTP(WEATHER_MACRO_ID, "data");
 
     //Convert first byte into our temperature value from -64 to +64 degrees celsius
-    int temperature = (int)data[0] - 64;
+    int temperature = (int)weatherData[0] - 64;
 
     //Rest of the data is the string for the type of weather taking place
-    ManagedString rawString = ManagedString((char*)data);
-    ManagedString weatherString = rawString.substring(1, rawString.length());
+    ManagedString rawWeatherString = ManagedString((char*)weatherData);
+    ManagedString weatherString = rawWeatherString.substring(1, rawWeatherString.length());
 
     //Display data
     uBit.display.scroll(weatherString);
     uBit.display.scroll(temperature);
+
     release_fiber();
 }
